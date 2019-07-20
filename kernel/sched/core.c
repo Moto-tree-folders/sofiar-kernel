@@ -1124,6 +1124,7 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	    new_mask != cpu_perf_mask && new_mask != cpu_prime_mask)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	rq = task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 
@@ -1133,6 +1134,13 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 		 */
 		cpu_valid_mask = cpu_online_mask;
 	}
+=======
+	/* Force all performance-critical kthreads onto the big cluster */
+	if (p->flags & PF_PERF_CRITICAL)
+		new_mask = cpu_perf_mask;
+
+	rq = task_rq_lock(p, &flags);
+>>>>>>> cd201f586ec21 (kernel: Add API to mark IRQs and kthreads as performance critical)
 
 	/*
 	 * Must re-check here, to close a race against __kthread_bind(),
