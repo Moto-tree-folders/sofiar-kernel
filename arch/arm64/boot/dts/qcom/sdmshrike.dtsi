@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2514,5 +2514,7 @@
 #include "sdmshrike-qupv3.dtsi"
 #include "sm8150-audio.dtsi"
 #include "sm8150-pm.dtsi"
+#include "sdmshrike-vidc.dtsi"
+#include "sdmshrike-pm.dtsi"
 #include "sdmshrike-gpu.dtsi"
 #include "sdmshrike-thermal.dtsi"
