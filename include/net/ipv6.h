@@ -264,16 +264,16 @@ static inline struct ipv6_txoptions *txopt_get(const struct ipv6_pinfo *np)
 {
 	struct ipv6_txoptions *opt;
 
-	rcu_read_lock();
-	opt = rcu_dereference(np->opt);
-	if (opt) {
-		if (!refcount_inc_not_zero(&opt->refcnt))
-			opt = NULL;
-		else
-			opt = rcu_pointer_handoff(opt);
-	}
-	rcu_read_unlock();
-	return opt;
+		rcu_read_lock();
+		opt = rcu_dereference(np->opt);
+			if (opt) {
+				if (!refcount_inc_not_zero(&opt->refcnt))
+					opt = NULL;
+				else
+					opt = NULL;
+			}
+		rcu_read_unlock();
+		return opt;
 }
 
 static inline void txopt_put(struct ipv6_txoptions *opt)

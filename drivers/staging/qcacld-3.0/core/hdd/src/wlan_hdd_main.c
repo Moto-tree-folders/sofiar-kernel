@@ -3361,7 +3361,7 @@ static int __hdd_open(struct net_device *dev)
 	}
 
 	/* Enable carrier and transmit queues for NDI */
-	if (WLAN_HDD_IS_NDI(adapter)) {
+	if WLAN_HDD_IS_NDI(adapter) {
 		hdd_debug("Enabling Tx Queues");
 		wlan_hdd_netif_queue_control(adapter,
 			WLAN_START_ALL_NETIF_QUEUE_N_CARRIER,
@@ -3464,7 +3464,7 @@ static int __hdd_stop(struct net_device *dev)
 	 * layer. Skip BSS termination and adapter deletion for NAN Data
 	 * interface (NDI).
 	 */
-	if (WLAN_HDD_IS_NDI(adapter))
+	if WLAN_HDD_IS_NDI(adapter)
 		return 0;
 
 	/*
