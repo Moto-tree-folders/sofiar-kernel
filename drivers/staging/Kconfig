@@ -118,4 +118,9 @@ source "drivers/staging/vboxvideo/Kconfig"
 
 source "drivers/staging/pi433/Kconfig"
 
+config QCA_CLD_WLAN
+	bool "Qualcomm Atheros CLD WLAN module"
+	help
+	  Add support for the Qualcomm Atheros CLD WLAN module.
+
 endif # STAGING
