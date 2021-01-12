@@ -102,6 +102,131 @@ const char *to_mhi_pm_state_str(enum MHI_PM_STATE state)
 	return mhi_pm_state_str[index];
 }
 
+<<<<<<< HEAD
+=======
+static void mhi_time_async_cb(struct mhi_device *mhi_dev, u32 sequence,
+			      u64 local_time, u64 remote_time)
+{
+	struct mhi_controller *mhi_cntrl = mhi_dev->mhi_cntrl;
+
+	MHI_LOG("Time response: seq:%x local: %llu remote: %llu (ticks)\n",
+		sequence, local_time, remote_time);
+}
+
+static void mhi_time_us_async_cb(struct mhi_device *mhi_dev, u32 sequence,
+				 u64 local_time, u64 remote_time)
+{
+	struct mhi_controller *mhi_cntrl = mhi_dev->mhi_cntrl;
+
+	MHI_LOG("Time response: seq:%x local: %llu remote: %llu (us)\n",
+		sequence, LOCAL_TICKS_TO_US(local_time),
+		REMOTE_TICKS_TO_US(remote_time));
+}
+
+static ssize_t time_show(struct device *dev,
+			 struct device_attribute *attr,
+			 char *buf)
+{
+	struct mhi_device *mhi_dev = to_mhi_device(dev);
+	struct mhi_controller *mhi_cntrl = mhi_dev->mhi_cntrl;
+	u64 t_host, t_device;
+	int ret;
+
+	ret = mhi_get_remote_time_sync(mhi_dev, &t_host, &t_device);
+	if (ret) {
+		MHI_ERR("Failed to obtain time, ret:%d\n", ret);
+		return scnprintf(buf, PAGE_SIZE,
+				 "Request failed or feature unsupported\n");
+	}
+
+	return scnprintf(buf, PAGE_SIZE, "local: %llu remote: %llu (ticks)\n",
+			 t_host, t_device);
+}
+static DEVICE_ATTR_RO(time);
+
+static ssize_t time_us_show(struct device *dev,
+			    struct device_attribute *attr,
+			    char *buf)
+{
+	struct mhi_device *mhi_dev = to_mhi_device(dev);
+	struct mhi_controller *mhi_cntrl = mhi_dev->mhi_cntrl;
+	u64 t_host, t_device;
+	int ret;
+
+	ret = mhi_get_remote_time_sync(mhi_dev, &t_host, &t_device);
+	if (ret) {
+		MHI_ERR("Failed to obtain time, ret:%d\n", ret);
+		return scnprintf(buf, PAGE_SIZE,
+				 "Request failed or feature unsupported\n");
+	}
+
+	return scnprintf(buf, PAGE_SIZE, "local: %llu remote: %llu (us)\n",
+			 LOCAL_TICKS_TO_US(t_host),
+			 REMOTE_TICKS_TO_US(t_device));
+}
+static DEVICE_ATTR_RO(time_us);
+
+static ssize_t time_async_show(struct device *dev,
+			       struct device_attribute *attr,
+			       char *buf)
+{
+	struct mhi_device *mhi_dev = to_mhi_device(dev);
+	struct mhi_controller *mhi_cntrl = mhi_dev->mhi_cntrl;
+	u32 seq = prandom_u32();
+	int ret;
+
+	if (!seq)
+		seq = 1;
+
+	ret = mhi_get_remote_time(mhi_dev, seq, &mhi_time_async_cb);
+	if (ret) {
+		MHI_ERR("Failed to request time, seq:%x, ret:%d\n", seq, ret);
+		return scnprintf(buf, PAGE_SIZE,
+				 "Request failed or feature unsupported\n");
+	}
+
+	return scnprintf(buf, PAGE_SIZE,
+			 "Requested time asynchronously with seq:%x\n", seq);
+}
+static DEVICE_ATTR_RO(time_async);
+
+static ssize_t time_us_async_show(struct device *dev,
+				  struct device_attribute *attr,
+				  char *buf)
+{
+	struct mhi_device *mhi_dev = to_mhi_device(dev);
+	struct mhi_controller *mhi_cntrl = mhi_dev->mhi_cntrl;
+	u32 seq = prandom_u32();
+	int ret;
+
+	if (!seq)
+		seq = 1;
+
+	ret = mhi_get_remote_time(mhi_dev, seq, &mhi_time_us_async_cb);
+	if (ret) {
+		MHI_ERR("Failed to request time, seq:%x, ret:%d\n", seq, ret);
+		return scnprintf(buf, PAGE_SIZE,
+				 "Request failed or feature unsupported\n");
+	}
+
+	return scnprintf(buf, PAGE_SIZE,
+			 "Requested time asynchronously with seq:%x\n", seq);
+}
+static DEVICE_ATTR_RO(time_us_async);
+
+static struct attribute *mhi_tsync_attrs[] = {
+	&dev_attr_time.attr,
+	&dev_attr_time_us.attr,
+	&dev_attr_time_async.attr,
+	&dev_attr_time_us_async.attr,
+	NULL,
+};
+
+static const struct attribute_group mhi_tsync_group = {
+	.attrs = mhi_tsync_attrs,
+};
+
+>>>>>>> 65681eadf1cc (mhi: core: Fix format specifier warnings)
 static ssize_t log_level_show(struct device *dev,
 			      struct device_attribute *attr,
 			      char *buf)
