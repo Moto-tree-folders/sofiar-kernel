@@ -133,14 +133,20 @@ static int alarmtimer_rtc_add_device(struct device *dev,
 		__ws = NULL;
 	}
 
-unlock:
+rtc_irq_reg_err:
 	spin_unlock_irqrestore(&rtcdev_lock, flags);
 
 	wakeup_source_unregister(__ws);
 	return err;
 }
 
-	return ret;
+	static void alarmtimer_rtc_remove_device(struct device *dev,
+				struct class_interface *class_intf)
+{
+	if (rtcdev && dev == &rtcdev->dev) {
+		rtc_irq_unregister(rtcdev, &alarmtimer_rtc_task);
+		rtcdev = NULL;
+	}
 }
 
 static inline void alarmtimer_rtc_timer_init(void)
