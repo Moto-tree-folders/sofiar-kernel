@@ -1,3 +1,9 @@
+#
+## DEXK SETUP
+#
+CONFIG_QCA_CLD_WLAN=y
+
+
 CONFIG_LOCALVERSION="-Dexk-r1.0-STABLE-trinkets-Seba_3567"
 # CONFIG_LOCALVERSION_AUTO is not set
 # CONFIG_FHANDLE is not set
