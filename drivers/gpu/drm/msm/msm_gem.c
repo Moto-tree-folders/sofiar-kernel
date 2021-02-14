@@ -175,7 +175,9 @@ static void put_pages(struct drm_gem_object *obj)
 	struct msm_gem_object *msm_obj = to_msm_bo(obj);
 
 	if (msm_obj->pages) {
-
+<<<<<<< HEAD
+		if (msm_obj->sgt)
+=======
 		if (msm_obj->sgt) {
 			/* For non-cached buffers, ensure the new
 			 * pages are clean because display controller,
@@ -183,7 +185,9 @@ static void put_pages(struct drm_gem_object *obj)
 			 */
 			if (msm_obj->flags & (MSM_BO_WC|MSM_BO_UNCACHED))
 				sync_for_cpu(msm_obj);
-			  sg_free_table(msm_obj->sgt);
+
+>>>>>>> 21dc6df7002b (treewide: Linux 4.14.176)
+			sg_free_table(msm_obj->sgt);
 		kfree(msm_obj->sgt);
 
 		if (use_pages(obj))
