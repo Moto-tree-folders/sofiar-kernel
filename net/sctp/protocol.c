@@ -435,15 +435,14 @@ static void sctp_v4_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 {
 	struct sctp_association *asoc = t->asoc;
 	struct rtable *rt;
-	struct flowi _fl;
-	struct flowi4 *fl4 = &_fl.u.ip4;
+	struct flowi4 *fl4 = &fl->u.ip4;
 	struct sctp_bind_addr *bp;
 	struct sctp_sockaddr_entry *laddr;
 	struct dst_entry *dst = NULL;
 	union sctp_addr *daddr = &t->ipaddr;
 	union sctp_addr dst_saddr;
 
-	memset(&_fl, 0x0, sizeof(_fl));
+	memset(fl4, 0x0, sizeof(struct flowi4));
 	fl4->daddr  = daddr->v4.sin_addr.s_addr;
 	fl4->fl4_dport = daddr->v4.sin_port;
 	fl4->flowi4_proto = IPPROTO_SCTP;
@@ -461,11 +460,8 @@ static void sctp_v4_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 		 &fl4->saddr);
 
 	rt = ip_route_output_key(sock_net(sk), fl4);
-	if (!IS_ERR(rt)) {
+	if (!IS_ERR(rt))
 		dst = &rt->dst;
-		t->dst = dst;
-		memcpy(fl, &_fl, sizeof(_fl));
-	}
 
 	/* If there is no association or if a source address is passed, no
 	 * more validation is required.
@@ -528,33 +524,27 @@ static void sctp_v4_get_dst(struct sctp_transport *t, union sctp_addr *saddr,
 		odev = __ip_dev_find(sock_net(sk), laddr->a.v4.sin_addr.s_addr,
 				     false);
 		if (!odev || odev->ifindex != fl4->flowi4_oif) {
-			if (!dst) {
+			if (!dst)
 				dst = &rt->dst;
-				t->dst = dst;
-				memcpy(fl, &_fl, sizeof(_fl));
-			} else {
+			else
 				dst_release(&rt->dst);
-			}
 			continue;
 		}
 
 		dst_release(dst);
 		dst = &rt->dst;
-		t->dst = dst;
-		memcpy(fl, &_fl, sizeof(_fl));
 		break;
 	}
 
 out_unlock:
 	rcu_read_unlock();
 out:
-	if (dst) {
+	t->dst = dst;
+	if (dst)
 		pr_debug("rt_dst:%pI4, rt_src:%pI4\n",
-			 &fl->u.ip4.daddr, &fl->u.ip4.saddr);
-	} else {
-		t->dst = NULL;
+			 &fl4->daddr, &fl4->saddr);
+	else
 		pr_debug("no route\n");
-	}
 }
 
 /* For v4, the source address is cached in the route entry(dst). So no need

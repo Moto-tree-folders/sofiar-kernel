@@ -4650,9 +4650,9 @@ int add_counter(unsigned int msr_num, char *path, char *name,
 	}
 
 	msrp->msr_num = msr_num;
-	strncpy(msrp->name, name, NAME_BYTES - 1);
+	strncpy(msrp->name, name, NAME_BYTES);
 	if (path)
-		strncpy(msrp->path, path, PATH_BYTES - 1);
+		strncpy(msrp->path, path, PATH_BYTES);
 	msrp->width = width;
 	msrp->type = type;
 	msrp->format = format;
