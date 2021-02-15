@@ -9,26 +9,13 @@
 obj-vdso := gettimeofday.o note.o sigreturn.o
 
 # Build rules
-targets := $(obj-vdso-s) $(obj-vdso-c) vdso.so vdso.so.dbg
-obj-vdso-s := $(addprefix $(obj)/, $(obj-vdso-s))
-obj-vdso-c := $(addprefix $(obj)/, $(obj-vdso-c))
-obj-vdso   := $(obj-vdso-c) $(obj-vdso-s)
+targets := $(obj-vdso) vdso.so vdso.so.dbg
+obj-vdso := $(addprefix $(obj)/, $(obj-vdso))
 
-ccflags-y := -fno-stack-protector -ffixed-x18
-ccflags-y += -DDISABLE_BRANCH_PROFILING
-ccflags-y += $(DISABLE_LTO) $(DISABLE_SCS)
-ccflags-y += $(call cc-option, -fno-whole-program)
-ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1  --hash-style=sysv \
-		--build-id $(call ld-option,-n) -T
-
-# Force -O2 to avoid libgcc dependencies
-CFLAGS_REMOVE_vgettimeofday.o = -pg -Os
-CFLAGS_vgettimeofday.o = -O2 -fPIC
-ifneq ($(cc-name),clang)
-CFLAGS_vgettimeofday.o += -mcmodel=tiny
-endif
-
-CFLAGS_REMOVE_vgettimeofday.o += $(CC_FLAGS_SCS)
+ccflags-y := -shared -fno-common -fno-builtin
+ccflags-y += -nostdlib -Wl,-soname=linux-vdso.so.1 \
+		$(call cc-ldoption, -Wl$(comma)--hash-style=sysv)
+ccflags-y += $(DISABLE_LTO)
 
 # Disable gcov profiling for VDSO code
 GCOV_PROFILE := n
