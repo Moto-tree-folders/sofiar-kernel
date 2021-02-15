@@ -117,6 +117,7 @@ static void end_atomic(struct msm_drm_private *priv, uint32_t crtc_mask,
 
 static void commit_destroy(struct msm_commit *c)
 {
+	end_atomic(c->dev->dev_private, c->crtc_mask, c->plane_mask);
 	if (c->nonblock)
 		kfree(c);
 }
@@ -565,16 +566,6 @@ static void msm_atomic_helper_commit_modeset_enables(struct drm_device *dev,
 	SDE_ATRACE_END("msm_enable");
 }
 
-static void complete_commit_cleanup(struct kthread_work *work)
-{
-	struct msm_commit *c = container_of(work, typeof(*c), commit_work);
-	struct drm_atomic_state *state = c->state;
-
-	drm_atomic_state_put(state);
-
-	commit_destroy(c);
-}
-
 /* The (potentially) asynchronous part of the commit.  At this point
  * nothing can fail short of armageddon.
  */
@@ -614,19 +605,21 @@ static void complete_commit(struct msm_commit *c)
 
 	kms->funcs->complete_commit(kms, state);
 
-	end_atomic(priv, c->crtc_mask, c->plane_mask);
+	drm_atomic_state_put(state);
+
+	commit_destroy(c);
 }
 
 static void _msm_drm_commit_work_cb(struct kthread_work *work)
 {
-	struct msm_commit *c = container_of(work, typeof(*c), commit_work);
-	struct drm_atomic_state *state = c->state;
-	struct drm_device *dev = state->dev;
-	struct msm_drm_private *priv = dev->dev_private;
-	struct pm_qos_request req = {
-		.type = PM_QOS_REQ_AFFINE_CORES,
-		.cpus_affine = ATOMIC_INIT(BIT(raw_smp_processor_id()))
-	};
+	struct msm_commit *commit =  NULL;
+
+	if (!work) {
+		DRM_ERROR("%s: Invalid commit work data!\n", __func__);
+		return;
+	}
+
+	commit = container_of(work, struct msm_commit, commit_work);
 
 	/*
 	 * Optimistically assume the current task won't migrate to another CPU
@@ -635,17 +628,8 @@ static void _msm_drm_commit_work_cb(struct kthread_work *work)
 	 */
 	pm_qos_add_request(&req, PM_QOS_CPU_DMA_LATENCY, 100);
 	SDE_ATRACE_BEGIN("complete_commit");
-	complete_commit(c);
+	complete_commit(commit);
 	SDE_ATRACE_END("complete_commit");
-	pm_qos_remove_request(&req);
-
-	if (c->nonblock) {
-		/* Offload the cleanup onto little CPUs */
-		kthread_init_work(&c->commit_work, complete_commit_cleanup);
-		kthread_queue_work(&priv->clean_thread.worker, &c->commit_work);
-	} else {
-		complete_commit_cleanup(&c->commit_work);
-	}
 }
 
 static struct msm_commit *commit_init(struct drm_atomic_state *state,
@@ -716,7 +700,6 @@ static void msm_atomic_commit_dispatch(struct drm_device *dev,
 		 */
 		DRM_ERROR("failed to dispatch commit to any CRTC\n");
 		complete_commit(commit);
-		complete_commit_cleanup(&commit->commit_work);
 	} else if (!nonblock) {
 		kthread_flush_work(&commit->commit_work);
 	}
