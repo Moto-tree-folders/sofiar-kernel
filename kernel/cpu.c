@@ -568,7 +568,6 @@ static inline bool can_rollback_cpu(struct cpuhp_cpu_state *st)
 static int cpuhp_up_callbacks(unsigned int cpu, struct cpuhp_cpu_state *st,
 			      enum cpuhp_state target)
 {
-<<<<<<< HEAD
 	enum cpuhp_state prev_state = st->state;
 	int ret = 0;
 
@@ -1224,17 +1223,6 @@ static int do_cpu_up(unsigned int cpu, enum cpuhp_state target)
 	err = try_online_node(cpu_to_node(cpu));
 	if (err)
 		return err;
-=======
-	struct cpumask newmask;
-	int err;
-
-	cpumask_andnot(&newmask, cpu_online_mask, cpumask_of(cpu));
-
-	/* One big cluster CPU and one little cluster CPU must remain online */
-	if (!cpumask_intersects(&newmask, cpu_perf_mask) ||
-	    !cpumask_intersects(&newmask, cpu_lp_mask))
-		return -EINVAL;
->>>>>>> cd201f586ec21 (kernel: Add API to mark IRQs and kthreads as performance critical)
 
 	cpu_maps_update_begin();
 
@@ -2108,20 +2096,9 @@ static ssize_t show_cpuhp_states(struct device *dev,
 	ssize_t cur, res = 0;
 	int i;
 
-<<<<<<< HEAD
 	mutex_lock(&cpuhp_state_mutex);
 	for (i = CPUHP_OFFLINE; i <= CPUHP_ONLINE; i++) {
 		struct cpuhp_step *sp = cpuhp_get_step(i);
-=======
-	cpu_maps_update_begin();
-	unaffine_perf_irqs();
-	first_cpu = cpumask_first(cpu_online_mask);
-	/*
-	 * We take down all of the non-boot CPUs in one shot to avoid races
-	 * with the userspace trying to use the CPU hotplug at the same time
-	 */
-	cpumask_clear(frozen_cpus);
->>>>>>> cd201f586ec21 (kernel: Add API to mark IRQs and kthreads as performance critical)
 
 		if (sp->name) {
 			cur = sprintf(buf, "%3d: %s\n", i, sp->name);
@@ -2208,15 +2185,6 @@ int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval)
 		cpu_smt_control = ctrlval;
 		arch_smt_update();
 	}
-<<<<<<< HEAD
-=======
-
-	arch_enable_nonboot_cpus_end();
-
-	cpumask_clear(frozen_cpus);
-	reaffine_perf_irqs();
-out:
->>>>>>> cd201f586ec21 (kernel: Add API to mark IRQs and kthreads as performance critical)
 	cpu_maps_update_done();
 	return ret;
 }
