@@ -1,3 +1,14 @@
+##
+#   Dexk
+##
+CONFIG_BUILD_ARM64_DTC=""
+CONFIG_BUILD_ARM64_DTC_FLAGS=""
+CONFIG_DTC=y
+
+
+##
+#  kernel
+##
 CONFIG_LOCALVERSION="-perf"
 # CONFIG_LOCALVERSION_AUTO is not set
 # CONFIG_FHANDLE is not set
