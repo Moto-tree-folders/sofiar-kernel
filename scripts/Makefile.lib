@@ -228,7 +228,7 @@ $(filter %.tab.c,$(targets)): $(obj)/%.tab.c: $(src)/%.y FORCE
 	$(call if_changed,bison)
 
 quiet_cmd_bison_h = YACC    $@
-      cmd_bison_h = bison -o/dev/null --defines=$@ -t -l -p $(YACC_PREFIX) $<
+      cmd_bison_h = $(YACC) -o/dev/null --defines=$@ -t -l -p $(YACC_PREFIX) $<
 
 ifdef REGENERATE_PARSERS
 .PRECIOUS: $(src)/%.tab.h_shipped
@@ -288,8 +288,7 @@ DTC ?= $(objtree)/scripts/dtc/dtc
 ifeq ($(KBUILD_ENABLE_EXTRA_GCC_CHECKS),)
 DTC_FLAGS += -Wno-unit_address_vs_reg \
 	-Wno-unique_unit_address \
-	-Wno-graph_port \
-	-Wno-alias_paths
+	-Wno-graph_port
 endif
 ifeq ($(DTC_EXT),)
 DTC_FLAGS += -Wno-simple_bus_reg \
@@ -357,7 +356,7 @@ cmd_cat = (cat $(filter-out FORCE,$^) > $@) || (rm -f $@; false)
 size_append = printf $(shell						\
 dec_size=0;								\
 for F in $1; do								\
-	fsize=$$($(CONFIG_SHELL) $(srctree)/scripts/file-size.sh $$F);	\
+	fsize=$$(stat -c "%s" $$F);					\
 	dec_size=$$(expr $$dec_size + $$fsize);				\
 done;									\
 printf "%08x\n" $$dec_size |						\
