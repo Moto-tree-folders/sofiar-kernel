@@ -228,24 +228,6 @@ static void check_is_string(struct check *c, struct dt_info *dti,
 #define ERROR_IF_NOT_STRING(nm, propname) \
 	ERROR(nm, check_is_string, (propname))
 
-static void check_is_null_terminated(struct check *c, struct dt_info *dti,
-			    struct node *node)
-{
-	struct property *prop;
-	char *propname = c->data;
-
-	prop = get_property(node, propname);
-	if (!prop)
-		return; /* Not present, assumed ok */
-
-	if (prop->val.val[prop->val.len-1] != '\0')
-		FAIL_PROP(c, dti, node, prop, "property is not null terminated");
-}
-#define WARNING_IF_NOT_NULL_TERMINATED(nm, propname) \
-	WARNING(nm, check_is_null_terminated, (propname))
-#define ERROR_IF_NOT_NULL_TERMINATED(nm, propname) \
-	ERROR(nm, check_is_null_terminated, (propname))
-
 static void check_is_string_list(struct check *c, struct dt_info *dti,
 				 struct node *node)
 {
@@ -692,7 +674,7 @@ WARNING_IF_NOT_CELL(interrupt_cells_is_cell, "#interrupt-cells");
 
 WARNING_IF_NOT_STRING(device_type_is_string, "device_type");
 WARNING_IF_NOT_STRING(model_is_string, "model");
-WARNING_IF_NOT_NULL_TERMINATED(status_is_null_terminated, "status");
+WARNING_IF_NOT_STRING(status_is_string, "status");
 WARNING_IF_NOT_STRING(label_is_string, "label");
 
 WARNING_IF_NOT_STRING_LIST(compatible_is_string_list, "compatible");
@@ -1759,7 +1741,7 @@ static struct check *check_table[] = {
 	&omit_unused_nodes,
 
 	&address_cells_is_cell, &size_cells_is_cell, &interrupt_cells_is_cell,
-	&device_type_is_string, &model_is_string, &status_is_null_terminated,
+	&device_type_is_string, &model_is_string, &status_is_string,
 	&label_is_string,
 
 	&compatible_is_string_list, &names_is_string_list,
